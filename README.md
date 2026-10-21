@@ -19,6 +19,10 @@ bundle exec jekyll serve --host 127.0.0.1
 
 预览：http://127.0.0.1:4000
 
+开发模式自动禁用 PWA 离线缓存，并发送 `Cache-Control: no-store`，修改文章后刷新原地址即可看到更新。已打开过旧版预览的浏览器会在检查 Service Worker 更新后自动清理本站的 `chirpy-*` 缓存；首次迁移可能需要再刷新一次。修改 `_config.yml` 或 `_plugins/` 后需重启本地预览。
+
+正式构建使用 `JEKYLL_ENV=production`（部署工作流已配置），仍保留主题原有的 PWA 缓存行为。
+
 ## 内容与配置
 
 - `_posts/`：已发布文章。

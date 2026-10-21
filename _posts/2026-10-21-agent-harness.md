@@ -1,0 +1,363 @@
+---
+title: "Agent Harness：让大模型把事情做完的那层工程"
+description: "从一次导出功能修复出发，讨论 Agent Harness 的职责边界、状态恢复与验收设计，以及可靠性、成本和复杂度之间的取舍。"
+date: 2026-10-21 09:00:00 +0800
+categories: [原理与架构]
+tags: [Agent, Harness, 大模型, 软件工程]
+toc: true
+image:
+  path: /assets/img/posts/agent-harness/hero.png
+  alt: "机器人在配有文件、终端、记录本和检查工具的工作台上完成任务"
+---
+
+你把一个问题交给 AI：“导出的 CSV 文件少了一列，帮我修好。”
+
+它很快解释了可能的原因，还给出一段看起来合理的代码。但接下来呢？它有没有找到真正负责导出的文件？改动是否保存了？测试跑过没有？如果执行到一半断开，下次还能接着做吗？
+
+**模型能提出一个好办法，与系统能把这个办法落实，是两件需要分别解决的事。Harness 为模型提供行动所需的运行支持。**
+
+这篇文章讨论的是 **Agent Harness**：围绕模型搭建的执行与反馈系统。沿着这个导出问题，我想回答三个设计问题：哪些决策可以交给模型，哪些约束必须由程序执行；怎样在上下文有限、执行可能中断的条件下保留进展；又凭什么把任务标记为完成。
+
+> 本文是概念与架构讲解。导出功能案例、状态记录和伪代码均为教学示例，不是某个产品的实测结果。资料核对日期为 2026 年 10 月 21 日；文末提供官方文章和 GitHub 阅读入口。
+
+## 1. Harness 到底是什么？
+
+可以把模型想象成坐在工作台前的工程师。它能分析问题、提出行动；工作台则提供文件、终端、工具、记录和检查设备，让行动真正发生。
+
+怎样检查这张“工作台”是否考虑周全？Barbaste 等人的 [Harness Engineering 源码研究](https://arxiv.org/pdf/2609.00006#page=4)提供了七个分析维度。下面沿用其分类，把它们改写成设计时需要回答的问题：
+
+| 职责 | 要回答的问题 |
+| --- | --- |
+| Agent 循环 | 何时继续、重试、等待、取消或停止？ |
+| 模型集成 | 怎样适配消息、工具调用、流式响应与模型能力差异？ |
+| 工具与动作 | 能操作什么对象，如何表达成功、失败和部分结果？ |
+| 记忆与上下文 | 这一轮提供什么信息，哪些状态需要保存？ |
+| 安全与权限 | 哪些动作允许执行，执行环境能访问哪些资源？ |
+| 编排 | 是否需要委派，子任务的结果、预算与取消如何协调？ |
+| 扩展 | 工作方法、工具和策略怎样接入与更新？ |
+
+这是分析坐标，不是七个必须独立部署的服务。单 Agent 可以不实现委派；同一个模块也可以承担多个职责。界面和会话持久化会服务于多个部分，不能机械地塞进其中一格。
+
+![Harness 七个子系统围绕执行循环协作，上下文与编排提供支持，权限约束动作，扩展提供接入点](/assets/img/posts/agent-harness/subsystems.png){: width="4080" height="3460" }
+_七子系统关系图：依据论文 §2.3 改编，展示主要职责关系，不代表固定调用顺序或部署拓扑。_
+
+LangChain 在 [The Anatomy of an Agent Harness](https://www.langchain.com/blog/the-anatomy-of-an-agent-harness) 中采用了一个很宽的定义：Agent 系统中模型之外的代码、配置和执行逻辑，都可以放进 Harness 的讨论范围。本文沿用这个视角；不同项目对 Harness 的范围和内置能力可能有不同取舍。
+
+围绕 Harness 的设计、搭建与持续改进，就是 **Harness engineering**。Harness 指这套系统，Harness engineering 指建设和改进它的工程实践，就像“软件”和“软件工程”的关系。
+
+这项实践既包括工具执行、上下文管理和状态恢复等运行机制，也包括项目文档、测试和反馈设施等工作环境。OpenAI 的[同名文章](https://openai.com/index/harness-engineering/)更多从后一个角度展开：怎样让仓库知识可发现、架构约束可检查、运行结果可观察，从而让 Agent 在真实软件项目里有效工作。
+
+本文会结合这两个方面，解释 Harness 如何支持 Agent 持续推进任务，并用实际结果检查进展。
+
+## 2. 从“回答一次”到“行动一轮”
+
+回到 CSV 少一列的问题。模型第一次收到任务时，往往还不知道错误在哪里。合理的下一步可能是查看导出代码，而不是立即输出补丁。
+
+一种常见的模型驱动工具循环是：
+
+1. 把任务、约束和必要信息组装成上下文。
+2. 模型提出下一步，例如读取某个文件。
+3. Harness 根据工具名称、参数和权限策略，执行、拒绝或暂停等待授权。
+4. 把读到的内容或执行错误记录下来，放进后续上下文。
+5. 模型根据新信息继续行动、请求补充信息，或者提出结束；运行时也可以因预算等条件停止。
+
+![工具执行结果回到上下文，再驱动下一轮模型决策](/assets/img/posts/agent-harness/tool-loop.png){: width="3740" height="2480" }
+_工具循环图：模型提出行动，Harness 执行动作并回传结果。图中的工具名和数据是教学示例。_
+
+这里最关键的是**回路**。单向的“任务 → 模型 → 工具”也可以完成一次操作，但如果希望模型根据执行结果调整下一步，就要把结果送回后续调用。反馈提供了检查假设的依据；模型能否正确理解它，还取决于结果是否完整、清楚，以及模型自身的判断能力。
+
+工具调用也不意味着操作已经完成。模型产生的是一个请求，例如：
+
+```json
+{
+  "name": "read_file",
+  "arguments": {"path": "src/export.ts"}
+}
+```
+
+这只是示意性的工具调用结构，不对应某家厂商的完整 API 请求格式。真正读文件的是工具实现，它可以运行在本地、沙箱或远程服务中，Harness 负责接入并协调调用。权限边界需要由运行时或工具服务实际执行，不能只靠提示词要求模型遵守。
+
+如果文件不存在，系统应把“文件不存在”作为真实结果返回。把错误吞掉，或者仅返回一句含糊的“执行完成”，都会让下一轮推理建立在错误前提上。
+
+### 工具接口还要约定“什么时候不能改”
+
+如果模型读完 `src/export.ts` 后，另一个进程恰好改了文件，直接按旧内容覆盖就可能丢掉别人的修改。对这个案例，我会让编辑工具检查读取时的版本或内容哈希，并在目标片段不唯一时拒绝修改。返回值可以这样设计：
+
+```json
+{
+  "status": "conflict",
+  "code": "FILE_CHANGED_SINCE_READ",
+  "path": "src/export.ts",
+  "applied": false,
+  "next_action": "reread_and_rebase"
+}
+```
+
+这仍是教学示例。它把“文件发生变化”和“服务暂时不可用”区分开：前者需要重新读取并调整补丁，后者才可能适合重试。版本检查与写入还要由工具在同一个受保护的操作中完成，否则检查之后仍可能发生竞争。工具设计的价值就在这里：把前置条件、歧义和副作用说清楚，让模型能据此选择下一步。
+
+![文件从 v1 变为 v2 后，编辑工具拒绝旧补丁，Agent 重新读取并调整修改](/assets/img/posts/agent-harness/edit-conflict.png){: width="4080" height="2740" }
+_文件冲突图：拒绝过期修改并提供明确反馈，才能保留其他写入者的改动。版本号及返回字段为教学示例。_
+
+## 3. 上下文、历史、记忆：分别描述什么？
+
+一个常见想法是：把所有聊天记录、文件和日志都塞给模型，它不就什么都知道了吗？
+
+问题在于，**保存下来**和**这一轮需要看到**是两种需求。
+
+| 概念或用途 | 回答的问题 | 导出案例中的内容 |
+| --- | --- | --- |
+| 当前上下文 | 这次调用实际能看到什么？ | 已提供给模型的用户要求、导出函数和失败测试结果 |
+| 会话记录 | 这次工作发生过什么？ | 工具请求、执行结果、改动和验证记录 |
+| 持久化任务状态 | 中断或重建上下文后怎样继续？ | 已定位原因、已改文件、待跑用例、工作区版本 |
+| 长期记忆 | 哪些信息需要跨会话保留和检索？ | 经确认的用户偏好、项目事实和历史经验 |
+
+这几项不是互斥的存储层：会话历史可以是记忆的一部分，任务状态可以长期保存，检索出的记忆也可以进入当前上下文。“短期”和“长期”在一些框架中主要按作用范围区分，而不是按是否写入磁盘区分。例如，LangGraph 的[记忆文档](https://docs.langchain.com/oss/python/concepts/memory)把线程内状态称为短期记忆，即使它通过检查点持久化；长期记忆则可跨线程使用。本文关注的是各类信息的用途，不要求为它们分别建设服务。
+
+对于修复导出功能，当下最有用的可能只是二十行函数和一个失败用例。系统应按调试、恢复和数据保留需求保存必要记录，不必每轮原样发送所有日志。较长的输出可以保存为文件，在上下文中提供摘要、关键片段和可重新读取的路径。
+
+摘要也有代价：它可能省略关键细节。因此，影响下一步决策的记录最好保留明确状态，例如：
+
+```yaml
+# 教学示例：不是某个框架的配置格式
+task: 修复 CSV 导出缺少 currency 列
+status: in_progress
+finding: 列映射未包含 currency
+changed_files:
+  - src/export.ts
+verified:
+  - 原失败用例已通过
+pending:
+  - 检查空数据导出
+  - 检查实际下载文件的列顺序
+```
+
+“改好了，应该没问题”很难支持恢复；“改了哪里、哪些验证通过、哪些还没做”能提供更好的交接依据。重要结论还应能追溯到对应的代码版本和验证记录。
+
+对于长期记忆，我还会单独设计写入规则。例如，“本次导出缺了一列”是任务事实，不能直接升级成“所有导出都必须添加 currency”的永久规则。值得复用的记录应带来源、适用范围与更新时间，并支持纠正或失效；历史经验再次进入上下文时，仍要与当前项目状态核对。
+
+## 4. 长任务如何保持连续进展？
+
+长任务可能需要压缩或重建上下文，也可能在中断后恢复。它们都涉及同一个问题：后续调用如何获得继续工作所需的状态？上下文窗口是单次推理可处理信息的范围，会话则由应用组织；同一会话可以经历多次上下文压缩，重建上下文不一定意味着开启新的用户会话。
+
+Anthropic 在 [Effective harnesses for long-running agents](https://www.anthropic.com/research/effective-harnesses-for-long-running-agents) 中展示了一种做法：首次会话负责初始化，后续编码会话使用新上下文，并通过功能清单、进度文件和 Git 历史接续工作。这是具体方案，不代表所有长任务都必须拆成这种会话结构。
+
+![初始化生成持久化记录，后续会话读取记录、推进任务并更新交接材料](/assets/img/posts/agent-harness/session-handoff.png){: width="3720" height="2860" }
+_会话交接图：上下文可以重建，工作状态必须能找到。文件名来自 Anthropic 的公开示例，流程为简化重绘。_
+
+对我们的导出任务，可以把交接拆成三个动作：
+
+**进入时，重新确认现场。** 读取进度记录，也检查当前代码和工作区。记录说“测试通过”，不代表之后代码没被改过。
+
+**执行时，推进一个可验收的小目标。** 先处理缺失列，再检查空数据和列顺序。每一步都应留下能判断成败的证据。
+
+**离开时，留下下一步。** 保存改动、验证结果和未完成项；如果使用 Git，还需要遵守项目的提交授权。版本记录能帮助恢复代码，但不能撤销已经发生的外部操作。
+
+这里有一个很容易忽略的边界：**会话恢复不等于工具可以安全重跑。**
+
+比如发送邮件后连接中断，没收到返回值并不代表邮件没有发出。操作 ID 可以用来关联记录；如果服务提供查询接口，就可以据此核对状态。幂等键则是在服务支持相应语义时，用于避免同一请求重复产生副作用，它本身不是执行结果的证明。无法查询或安全重试时，应保留“结果未知”的状态并交由人工核对。上下文管理之外，执行系统还得处理这些问题。
+
+## 5. 完成状态要有证据支撑
+
+模型输出“已修复”，只能证明它产生了这句话。导出问题是否解决，还要看实际产物。
+
+一个可用的验收约定可以是：
+
+- 原先缺失的 `currency` 列出现在下载文件中。
+- 列顺序符合约定，已有字段没有丢失。
+- 空数据输入仍能正常导出。
+- 相关回归检查没有发现新的失败。
+
+![验证失败会带着证据返回修复步骤，验证通过才形成交付，受阻时明确保留未完成状态](/assets/img/posts/agent-harness/verification.png){: width="3760" height="2700" }
+_验证闭环图：完成、待修复和受阻是不同状态；不能把循环停止当成验收通过。_
+
+这是本文为导出任务设计的验收流程，不是所有 Harness 都自带的统一机制。检查可以由 Agent 调用工具完成，也可以由测试服务或人工评审完成；运行时负责记录这些结果，并按任务约定决定是否完成。测试通过只支持它覆盖到的结论，不能证明不存在其他缺陷。
+
+验证应当与风险匹配。一个格式调整可能只需要检查输出；导出逻辑变更需要覆盖相关输入；涉及浏览器下载行为时，还应检查用户实际拿到的文件。并不是每次任务都需要同一套庞大测试。
+
+如果测试环境无法启动，合理的结果是“代码已修改，验收受阻”，同时说明缺失的证据。为了让流程显示绿色而降低验收标准，会让自动化系统逐渐失去可信度。
+
+反馈也不只有测试。运行日志、页面截图、结构化差异和用户确认，都可能成为证据。选择哪一种，取决于任务的成功条件是否能被它观察到。
+
+## 6. 用一段伪代码串起来
+
+下面是**每轮最多执行一个工具请求的伪代码**，用于展示责任边界，不是可直接用于生产的 SDK 封装。示例假设适配层已将模型响应区分为工具请求、等待用户、结束候选和其他消息，省略了并行调用、流式输出和厂商消息协议。这些状态名是示例自定义的，不是通用 API 字段。
+
+```python
+state = load_or_create_task(task_id)
+
+while within_budget(state):
+    context = assemble_context(task, state, relevant_artifacts)
+    reply = model.generate(context, available_tools)
+    record_model_reply(state, reply)
+
+    if reply.tool_call:
+        decision = policy.check(reply.tool_call)
+
+        if decision.needs_user:
+            state.status = "waiting_for_user"
+            checkpoint(state)
+            break
+
+        if not decision.allowed:
+            record_tool_result(state, "denied", decision.reason)
+            checkpoint(state)
+            continue
+
+        # 执行器负责参数校验、超时、错误归一化与副作用追踪。
+        result = executor.run(reply.tool_call)
+        record_tool_result(state, result.status, result.payload)
+        checkpoint(state)
+        continue
+
+    if reply.needs_user:
+        state.status = "waiting_for_user"
+        checkpoint(state)
+        break
+
+    if not reply.finish_candidate:
+        # 普通说明或进度消息不代表完成，继续处理并受预算约束。
+        checkpoint(state)
+        continue
+
+    # 只有明确的结束候选，才进入本示例约定的验收步骤。
+    verdict = verify_acceptance(task, state)
+    if verdict.passed:
+        state.status = "completed"
+        checkpoint(state)
+        break
+    if verdict.blocked:
+        state.status = "blocked"
+        checkpoint(state)
+        break
+
+    record_feedback(state, verdict.missing_evidence)
+    checkpoint(state)
+else:
+    state.status = "budget_exhausted"
+    checkpoint(state)
+```
+
+这个循环不复杂，难点藏在每个函数的契约里：上下文如何取舍，权限在哪里强制执行，工具结果怎样关联回请求，预算是否覆盖工具执行和验收，以及进程崩溃后怎样对齐外部状态。
+
+尤其要注意，示例中的 `checkpoint` 并不能消除“操作已执行，但记录尚未落盘就崩溃”的窗口。有副作用的生产工具通常还需要持久化操作标识和恢复时的状态核对。
+
+## 7. Prompt、MCP、框架和 Harness 是什么关系？
+
+这些词经常出现在同一张架构图里，但它们并不是一组并列、互斥的模块：有的是输入内容，有的是工程方法，有的是接口协议或开发工具。
+
+| 概念 | 主要关注点 | 在这个案例中的作用 |
+| --- | --- | --- |
+| Prompt | 模型输入中的指令、问题、示例等；在本文中主要指任务指令 | “修复缺失列，保留已有导出格式” |
+| Context engineering | 持续选择、组织和维护推理所需的上下文，包括指令、工具描述、历史和外部数据 | 选入导出函数、需求和失败证据 |
+| Tool | 可调用的具体能力及其输入输出约定 | 读取文件、查询外部系统、执行检查 |
+| MCP | 应用与服务交换工具、资源、提示模板等能力的协议 | 通过 MCP 接入提供文件读取能力的服务 |
+| Skill | 封装工作方法、领域知识，以及可选的脚本和参考材料 | 复用“检查导出字段与边界输入”的操作说明 |
+| ACP（Agent Client Protocol） | 规范编辑器等客户端与 Coding Agent 的通信 | 让编辑器接入 Agent，呈现任务进展和修改 |
+| Agent framework / SDK | 提供构建系统的抽象与组件 | 消息处理、工具调用、状态或调度能力 |
+| Harness | 把上述部分组织成可运行的工作系统 | 管理任务从进入、执行到停止与恢复 |
+
+Prompt 是上下文的一部分，提示词设计与上下文工程也有重叠。Anthropic 的[上下文工程文章](https://www.anthropic.com/research/effective-context-engineering-for-ai-agents)强调的是对多轮推理中整个信息集合的持续管理，而不只调整指令的措辞。
+
+Tool 和 MCP 也不能等同：工具可以直接由本地函数、HTTP API 或其他接口提供，并不必须经过 MCP；MCP 也不仅承载工具调用，还提供资源和提示模板等能力。MCP 官方[架构说明](https://modelcontextprotocol.io/docs/learn/architecture)不规定应用如何使用模型或管理上下文，因此接入 MCP 后，应用仍需决定调用策略、权限和结果处理方式。
+
+[Agent Skills](https://agentskills.io/home)用 `SKILL.md` 及配套资源封装做事方法，工具负责提供可执行的动作，两者可以配合使用。Skill 中写了某个操作步骤，也不意味着自动获得该操作的权限。[ACP](https://agentclientprotocol.com/get-started/introduction)则面向客户端与 Agent 的集成；它不等于 MCP，也不意味着系统内部每次委派子任务都要引入一套网络协议。
+
+![ACP 连接客户端与 Agent，Skill 作为工作方法按需加载，MCP client 连接本地或远程 MCP server](/assets/img/posts/agent-harness/skill-mcp-acp.png){: width="4280" height="3640" }
+_接入关系图：Skill 是内容与资源的封装，ACP 和 MCP 是面向不同接口的协议，不是三个串行层。图中的 ACP 方法名依据 [v1 Prompt Turn](https://agentclientprotocol.com/protocol/v1/prompt-turn)。_
+
+框架与 Harness 的边界也可能重叠：一个 SDK 可以提供很多 Harness 能力，一个产品也可以在它之上补充自己的策略和环境。看名称不如看职责：**这套系统究竟替你管理了哪些状态，强制执行了哪些约束？**
+
+## 8. 如果由我设计，会怎样取舍？
+
+以本文的导出修复任务为例，我会先实现一个单 Agent 循环，配上必要的文件与命令工具、执行权限、任务记录和验收入口，再根据实际失败增加能力。理由是这个任务的关键步骤有明显依赖：先定位，再修改，最后验证；一开始拆成多个 Agent 会增加交接和协调成本，却不一定缩短关键路径。
+
+我的划分原则是：**让模型处理需要理解和判断的部分，让程序执行能够明确表达的约束。** 例如由模型判断该读哪个文件、如何修复；由执行器检查路径权限和超时，由任务系统记录状态，由明确的检查验证导出字段。这个边界也不是一成不变的：主观质量可能需要模型或人工评价，但其结论应与确定性检查的结果区分记录。
+
+具体实现中，我会优先考虑以下取舍：
+
+| 设计点 | 在这个任务中的选择 | 收益与代价 |
+| --- | --- | --- |
+| 上下文保留 | 保留关键代码、近期结果和任务摘要，较长材料按需读取 | 降低重复输入成本，但检索会增加调用，摘要也可能丢信息 |
+| 状态恢复 | 在关键步骤保存检查点，恢复时核对工作区与工具状态 | 减少重复工作，但要处理记录与实际执行不同步的问题 |
+| 工具接口 | 常用操作提供清晰的结构化接口，必要时允许受约束的命令执行 | 前者更容易校验，后者更灵活，但权限和错误处理更复杂 |
+| 结束条件 | 先定义导出验收项，缺少必要证据时保留未完成状态 | 交付更可检查，但验证会增加耗时，仍受测试覆盖范围限制 |
+| 重试策略 | 对可安全重试的临时错误设置有限重试；副作用结果未知时先核对 | 提高恢复能力，同时避免重复操作和无效消耗 |
+
+### 换模型，不能只改一个模型名
+
+模型集成值得单独设计。即使两个服务提供相似的 API 入口，也可能在工具参数、流式事件、结束原因、上下文限制和缓存支持上存在差异。我会在适配层集中维护这些能力，把厂商响应转换成循环能理解的事件；本文伪代码里的 `tool_call` 和 `finish_candidate` 就依赖这一步。
+
+切换模型后，还要用同一组任务重测工具选择、参数正确率和实际验收结果。接口请求能成功，只说明接通了服务，不能证明原来的工具描述、编辑方式和停止策略仍然合适。这也给成本优化划定了边界：便宜模型如果带来更多失败重试，总任务成本未必更低。
+
+![不同模型的响应由适配层转换为统一内部事件，再进入工具执行、等待用户或验收分支](/assets/img/posts/agent-harness/model-adapter.png){: width="4180" height="3100" }
+_模型适配图：以响应方向为例，展示厂商协议到内部事件的转换；统一事件格式不保证模型行为一致。_
+
+### 权限审批和沙箱，分别管什么？
+
+权限策略回答“这次动作是否获准”，执行隔离回答“即使动作执行了，它最多能碰到什么”。在导出案例里，可以允许 Agent 修改项目文件，同时通过受限目录挂载、网络和凭据配置限制它接触其他资源。
+
+有审批不代表进程已隔离，有沙箱也不代表其中每个业务操作都获授权。例如，只读诊断任务仍不应因为文件位于沙箱内就允许写入。对共享服务，我会把用户身份和资源范围放在可信执行上下文里，由服务校验，避免把模型填写的身份字段当作授权依据。
+
+![权限策略判断动作是否获准，受限执行环境约束工具进程可访问的目录、网络和凭据](/assets/img/posts/agent-harness/permissions-sandbox.png){: width="4240" height="3380" }
+_权限与隔离图：动作授权和资源限制需要分别设计。图示为教学场景，实际限制取决于隔离机制与配置。_
+
+### 不把样本观察当成选型禁令
+
+上述论文报告，其所检查的样本运行路径没有使用通用 Agent 框架，也未使用向量 embedding 做代码检索。这是特定版本、样本与检查范围内的观察，不能推出“框架没用”或“RAG 不适合 Agent”。作者也说明未完整追踪动态插件等路径，且没有做统一运行评测。[论文 §13.2、§15.6](https://arxiv.org/pdf/2609.00006#page=53)
+
+对导出问题，我会先利用函数名、字段名和路径做文本或结构检索；如果需求是“找出与这类业务规则相关的历史设计讨论”，再评估语义检索是否补足了召回。这里比较的是具体检索方法，不能把 RAG 整体等同于向量数据库。
+
+框架选择也一样：先看它的状态恢复是否符合需求、执行过程能否观察、团队能否维护。已经稳定的系统，不值得仅仅因为别的项目自写循环就重写；一个很短的循环，也不能替代权限、恢复和交付验证的设计。
+
+### 用失败证据决定下一步投入
+
+如果演示能跑通，但在真实任务里频繁失败，我会先沿执行记录定位问题发生在哪一层：
+
+| 现象 | 我会先检查什么 |
+| --- | --- |
+| 选错文件或忽略项目规则 | 所需信息是否进入上下文，是否有歧义或过期内容；再判断模型是否理解错误 |
+| 工具失败后继续按成功处理 | 返回值是否明确区分成功与失败，结果是否正确关联到请求并进入后续上下文 |
+| 恢复后重复做已完成的事 | 检查点是否保存成功，恢复时是否加载正确任务，记录是否与实际状态一致 |
+| 声称完成但下载文件仍不对 | 验收是否覆盖真实下载路径，还是只检查了某个内部函数 |
+| 一直重复相同操作 | 每轮有没有新证据，错误是否可重试，循环是否有预算和退出条件 |
+
+这些检查能帮助区分信息缺失、执行故障和判断错误。如果模型拿到了正确证据、工具反馈也正常，却仍持续做错决策，就更有依据去评估提示词和模型能力，而不是把所有失败都归因于模型不够强。
+
+任务路径能用明确规则描述时，普通脚本或工作流可能已经足够；连动态分支也可以由规则处理。需要根据开放的信息进行判断、难以预先列全路径时，模型自主选择下一步才更值得考虑。工作流本身也可以调用模型，同一个系统可以混合固定流程与 Agent 循环。Anthropic 在 [Building effective agents](https://www.anthropic.com/research/building-effective-agents) 中按控制流程主要由预定义代码还是模型决定来区分两者，并建议先选择简单方案，再按需要增加复杂度。
+
+评估 Harness 时，也不要只看一次演示是否漂亮。可以固定模型与一组代表性任务，对比调整前后的验收通过情况、人工介入次数、耗时、调用成本和中断恢复表现。这里给的是评估方法，不是本文已经做出的性能结论。
+
+对 CSV 这个小问题，理想的交付是：指出原因、留下修改、提供验证结果、说明尚未覆盖的边界。做到这些，用户才有依据决定是否接受改动。
+
+**Harness 的价值，就体现在让一次看起来聪明的回答，变成一段有状态、有行动、有证据的工作。**
+
+## 延伸阅读：先看思路，再看实现
+
+以下是本文实际查阅的资料。GitHub 项目入口会持续变化；本文只介绍其公开定位和阅读方向，不是特定版本的源码审计，也未运行这些项目进行性能对比。
+
+1. [Anthropic：Building effective agents](https://www.anthropic.com/research/building-effective-agents)（2024-12-19）。理解预定义工作流与动态决策的区别，帮助判断什么时候值得引入 Agent。
+2. [Anthropic：Effective harnesses for long-running agents](https://www.anthropic.com/research/effective-harnesses-for-long-running-agents)（2025-11-26）。关注初始化、增量推进、测试与跨会话交接的配合。
+3. [OpenAI：Harness engineering](https://openai.com/index/harness-engineering/)（2026-02-11）。从仓库知识、架构约束与反馈环境的角度，理解工程师需要建设什么。
+4. [LangChain：The Anatomy of an Agent Harness](https://www.langchain.com/blog/the-anatomy-of-an-agent-harness)（2026-03-10）。从模型周边能力的角度理解 Harness 的组成。
+5. [GitHub：anthropics/claude-quickstarts — autonomous-coding](https://github.com/anthropics/claude-quickstarts/tree/main/autonomous-coding)。README 给出了初始化与编码会话的示例结构；可以顺着 `agent.py`、`client.py`、`progress.py` 和 `prompts/` 阅读。本文未执行该示例。
+6. [GitHub：langchain-ai/deepagents](https://github.com/langchain-ai/deepagents)。项目将自身定位为开箱即用的 Agent Harness，适合作为观察能力组合的另一个入口。
+7. [MCP：Architecture overview](https://modelcontextprotocol.io/docs/learn/architecture)。用于区分工具连接协议与应用执行逻辑的职责。
+8. [Anthropic：Effective context engineering for AI agents](https://www.anthropic.com/research/effective-context-engineering-for-ai-agents)（2025-09-29）。理解提示词、工具描述、历史与外部信息如何共同构成上下文。
+9. [LangChain / LangGraph：Memory overview](https://docs.langchain.com/oss/python/concepts/memory)。查看按线程范围划分短期与长期记忆的具体设计，避免把持久化直接等同于长期记忆。
+10. [Barbaste 等：Harness Engineering: Anatomy, Architecture, and Evolution of Coding Agents — A Source-Code Study of Eleven Systems](https://arxiv.org/abs/2609.00006)（arXiv:2609.00006v1）。重点参考 §2.3 的职责分类、§8 的工具设计、§13 的观察及 §15.6 的研究局限。这是源码比较研究，不是性能排行榜；本文未复现其源码审计，也不把其版本快照视为产品的当前实现。
+11. [Agent Skills：Overview](https://agentskills.io/home)；[Agent Client Protocol：Introduction](https://agentclientprotocol.com/get-started/introduction)。用于区分工作方法封装与客户端集成协议。
+
+本文对上述论文的职责分类和部分观察作了中文概括，工具返回结构及导出案例中的设计取舍为本文新增示例。论文作者为 Paul Barbaste、Tristan Darrigol、Germain Vu、Tom Wiltberger，原作采用 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) 许可。
+
+### 配图与可编辑源文件
+
+全文共九张配图：一张 AI 生成的原创概念封面，以及八张本文绘制的手绘风格关系图与流程图，均不是产品内部架构截图。可下载源文件，在 [Excalidraw](https://excalidraw.com/) 中打开修改：
+
+- [Harness 七个子系统（Excalidraw）](/assets/img/posts/agent-harness/subsystems.excalidraw)
+- [工具执行循环（Excalidraw）](/assets/img/posts/agent-harness/tool-loop.excalidraw)
+- [文件修改冲突（Excalidraw）](/assets/img/posts/agent-harness/edit-conflict.excalidraw)
+- [跨会话交接（Excalidraw）](/assets/img/posts/agent-harness/session-handoff.excalidraw)
+- [验证闭环（Excalidraw）](/assets/img/posts/agent-harness/verification.excalidraw)
+- [Skill、MCP、ACP 接入关系（Excalidraw）](/assets/img/posts/agent-harness/skill-mcp-acp.excalidraw)
+- [模型适配（Excalidraw）](/assets/img/posts/agent-harness/model-adapter.excalidraw)
+- [权限与沙箱（Excalidraw）](/assets/img/posts/agent-harness/permissions-sandbox.excalidraw)
