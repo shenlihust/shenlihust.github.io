@@ -1,6 +1,6 @@
 # 知其所以
 
-基于 [Chirpy](https://github.com/cotes2020/jekyll-theme-chirpy) 的中文技术博客，记录软件开发、系统架构、人工智能与基础设施等领域的学习和实践，不限定技术方向。
+基于 [Chirpy](https://github.com/cotes2020/jekyll-theme-chirpy) 的中文博客，由 shenli 记录 AI 技术学习、开源项目分析与技术文章阅读中的理解和思考。
 
 ## 本地运行
 

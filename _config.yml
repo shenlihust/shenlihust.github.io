@@ -16,10 +16,10 @@ timezone: Asia/Shanghai
 
 title: 知其所以
 
-tagline: 读源码，做实验，记下理解的过程。
+tagline: 学习 AI 技术，拆解开源项目，记下理解与思考。
 
 description: >- # used by seo meta and the atom feed
-  记录软件开发、系统架构、人工智能与基础设施中的学习和实践，分享源码解读、问题排查与实验结果。
+  围绕 AI 技术学习与开源项目分析，记录原理、架构、源码和技术文章中的理解与思考。
 
 # Fill in the protocol & hostname for your site.
 # E.g. 'https://username.github.io', note that it does not end with a '/'.
@@ -34,7 +34,7 @@ twitter:
 social:
   # Change to your full name.
   # It will be displayed as the default author of the posts and the copyright owner in the Footer
-  name: shenlihust
+  name: shenli
   email:
   fediverse_handle: # fill in your fediverse handle. E.g. "@username@domain.com"
   links:
@@ -98,7 +98,7 @@ theme_mode: # [light | dark]
 cdn:
 
 # the avatar on sidebar, support local or CORS resources
-avatar: /assets/img/avatar.svg
+avatar: /assets/img/avatar-ai.svg
 
 # The URL of the site-wide social preview image used in SEO `og:image` meta tag.
 # It can be overridden by a customized `page.image` in front matter.
