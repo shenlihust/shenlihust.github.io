@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Harness 系统架构 · 知其所以</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#fafaf7;color:#1e3a5f;font-family:'Geist','PingFang SC','Microsoft YaHei',sans-serif;padding:40px 24px}.frame{max-width:1280px;margin:auto}.eyebrow{font:12px 'Geist Mono',monospace;letter-spacing:.16em;color:#526077}h1{font:400 38px 'Instrument Serif','Songti SC',serif;margin:16px 0}.intro{color:#526077;font-size:16px;line-height:1.8;margin:0 0 24px}.diagram-container{width:100%;overflow-x:auto}svg{display:block;width:100%;min-width:1280px}.name{font-size:20px;font-weight:600;fill:#1e3a5f}.sub{font-size:14px;fill:#526077}.tag{font:11px 'Geist Mono',monospace;letter-spacing:.1em;fill:#526077}.label{font-size:14px;fill:#526077}.edge{fill:none;stroke:#526077;stroke-width:1.5;marker-end:url(#arrow)}.return{stroke-dasharray:5 4}.footer{font-size:13px;color:#526077;line-height:1.9;border-top:1px solid #d8dfe6;padding-top:16px;margin-top:12px}@media print{body{padding:0}.diagram-container{overflow-x:visible}svg{min-width:0}}
+</style></head><body><main class="frame">
+<p class="eyebrow">知其所以 / ARCHITECTURE NOTE 01</p><h1>Harness：把模型决策接入真实工作</h1>
+<p class="intro">运行时组织上下文、协调执行并记录证据；真实结果回到下一轮决策，任务才能持续推进。</p>
+<div class="diagram-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-labelledby="harness-system-title harness-system-desc">
+<title id="harness-system-title">Harness 系统架构</title><desc id="harness-system-desc">用户通过 Harness 运行时连接上下文、模型与受控工具，工具结果形成反馈，会话证据与工作区副作用分别保存。</desc>
+<defs><marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0,8 3,0 6" fill="#526077"/></marker><marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#1e40af"/></marker><marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#2e5aa8"/></marker></defs>
+<rect width="1280" height="720" fill="#fafaf7"/>
+<rect x="304" y="40" width="704" height="616" rx="8" fill="#1e3a5f" fill-opacity=".02" stroke="#cbd5e1" stroke-dasharray="4 4"/>
+<text x="328" y="72" class="tag">HARNESS · 逻辑职责边界，非进程边界</text>
+<path class="edge" d="M216 368 H448" marker-start="url(#arrow)"/>
+<path class="edge" d="M536 204 V304"/>
+<path class="edge" d="M640 304 V264 Q640 256 648 256 H1136 Q1144 256 1144 248 V204" marker-start="url(#arrow)" style="stroke:#2e5aa8"/>
+<path class="edge" d="M728 368 H808"/>
+<path class="edge" d="M984 368 H1040"/>
+<path class="edge return" d="M1120 420 V476 Q1120 484 1112 484 H648 Q640 484 640 476 V432"/>
+<path class="edge" d="M536 432 V532" marker-start="url(#arrow)"/>
+<path class="edge" d="M1200 420 V532"/>
+<g><rect x="268" y="336" width="120" height="24" fill="#fafaf7"/><text x="328" y="353" text-anchor="middle" class="label">任务 / 进展</text>
+<rect x="548" y="240" width="100" height="24" fill="#fafaf7"/><text x="560" y="257" class="label">组装输入</text>
+<rect x="808" y="224" width="144" height="24" fill="#fafaf7"/><text x="880" y="241" text-anchor="middle" class="label">请求 / 模型输出</text>
+<rect x="756" y="452" width="240" height="24" fill="#fafaf7"/><text x="876" y="469" text-anchor="middle" class="label">真实结果 → 后续上下文</text>
+<rect x="368" y="472" width="156" height="24" fill="#fafaf7"/><text x="512" y="489" text-anchor="end" class="label">记录 / 恢复</text></g>
+<g><rect x="32" y="316" width="184" height="104" rx="6" fill="#fff" stroke="#64748b" stroke-width="1"/><text x="52" y="340" class="tag">UI / CLI / API</text><text x="52" y="372" class="name">交互入口</text><text x="52" y="400" class="sub">任务 · 约束 · 人工确认</text></g>
+<g><rect x="448" y="100" width="280" height="104" rx="6" fill="#fff" stroke="#64748b" stroke-width="1"/><text x="468" y="124" class="tag">CONTEXT</text><text x="468" y="156" class="name">上下文管理</text><text x="468" y="184" class="sub">指令 · 历史 · Skill · 检索</text></g>
+<g><rect x="448" y="304" width="280" height="128" rx="6" fill="#e9eefb" stroke="#1e40af" stroke-width="2"/><text x="468" y="328" class="tag">AGENT LOOP</text><text x="468" y="360" class="name">Harness 运行时</text><text x="468" y="388" class="sub">推进 · 等待 · 重试 · 取消</text></g>
+<g><rect x="1040" y="100" width="208" height="104" rx="6" fill="#f1f2f2" stroke="#64748b" stroke-width="1"/><text x="1060" y="124" class="tag">MODEL API</text><text x="1060" y="156" class="name">模型服务</text><text x="1060" y="184" class="sub">推理 · 文本 · 工具请求</text></g>
+<g><rect x="808" y="316" width="176" height="104" rx="6" fill="#fff" stroke="#64748b" stroke-width="1"/><text x="828" y="340" class="tag">POLICY</text><text x="828" y="372" class="name">执行策略</text><text x="828" y="400" class="sub">允许 · 拒绝 · 审批</text></g>
+<g><rect x="1040" y="316" width="208" height="104" rx="6" fill="#f1f2f2" stroke="#64748b" stroke-width="1"/><text x="1060" y="340" class="tag">TOOLS / MCP</text><text x="1060" y="372" class="name">工具执行</text><text x="1060" y="400" class="sub">本地隔离 / 远程授权</text></g>
+<g><rect x="448" y="532" width="280" height="104" rx="6" fill="#eef0f2" stroke="#64748b" stroke-width="1"/><text x="468" y="556" class="tag">STATE / TRACE</text><text x="468" y="588" class="name">状态与证据</text><text x="468" y="616" class="sub">会话历史 · 检查点 · 事件</text></g>
+<g><rect x="1040" y="532" width="208" height="104" rx="6" fill="#f1f2f2" stroke="#64748b" stroke-width="1"/><text x="1060" y="556" class="tag">ARTIFACTS</text><text x="1060" y="588" class="name">工作区与外部系统</text><text x="1060" y="616" class="sub">文件 · 测试 · 服务</text></g>
+<line x1="32" y1="676" x2="1248" y2="676" stroke="#d8dfe6"/>
+<rect x="32" y="696" width="12" height="12" fill="#e9eefb" stroke="#1e40af"/><text x="56" y="707" class="label">运行核心</text>
+<rect x="184" y="696" width="12" height="12" fill="#eef0f2" stroke="#64748b"/><text x="208" y="707" class="label">持久状态</text>
+<line x1="340" y1="702" x2="372" y2="702" stroke="#526077" stroke-dasharray="5 4"/><text x="384" y="707" class="label">结果反馈</text>
+<text x="1248" y="707" text-anchor="end" class="label">执行结束 ≠ 验收通过</text>
+</svg></div>
+<p class="footer">概念架构，衔接《Agent Harness：让大模型把事情做完的那层工程》。为保持概览清晰，省略多 Agent 委派、模型适配和重试分支。<br>本地沙箱约束本地执行；远程工具仍依赖服务端授权。恢复会话不会自动撤销工作区或外部系统的副作用。<br>配色沿用博客插图；字体采用 Diagram Design 排版，中文回退到系统字体。本图为样式试稿。</p>
+</main></body></html>
