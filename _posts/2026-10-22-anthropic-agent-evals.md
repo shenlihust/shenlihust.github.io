@@ -71,8 +71,6 @@ A01,12000
 ![原创中文图解：Agent 执行分出过程证据与产物证据；文件正确、数据未被写入且可交付后，再评价说明质量](/assets/img/posts/anthropic-agent-evals/evidence-flow.png)
 _图 1：本文原创。图中的 CSV 是教学示例；硬条件先行是本例的评分设计，并非所有 Agent 任务都必须采用同一顺序。_
 
-[下载可编辑 Excalidraw 源文件](/assets/diagrams/anthropic-agent-evals/evidence-flow.excalidraw)
-
 图里的两条证据链各有盲区。
 
 只看最终文件，可能发现报表内容正确，却漏掉 Agent 曾试图更新订单状态。只看工具调用，可能看到它执行了文件写入，却不知道文件被后续步骤覆盖，或保存在用户无法取得的目录。
@@ -91,7 +89,6 @@ _图 1：本文原创。图中的 CSV 是教学示例；硬条件先行是本例
 
 ```python
 import csv
-
 
 def grade_report(csv_path, snapshot):
     expected = [
@@ -168,7 +165,7 @@ $$
 这对应理解 `pass@k` 与 `pass^k` 的两个方向。上述数值是公式计算，不是模型测试成绩。
 
 ![同一组五次尝试，在至少一次成功规则下通过，在全部成功规则下不通过](/assets/img/posts/anthropic-agent-evals/trial-rules.png)
-_图 2：原创示意。两种规则检查同一组尝试；单组示意不用于估计总体概率。[可编辑源文件](/assets/diagrams/anthropic-agent-evals/trial-rules.excalidraw)。_
+_图 2：原创示意。两种规则检查同一组尝试；单组示意不用于估计总体概率。_
 
 对交互式报表工具，如果用户愿意重试，而且系统有可信校验器选出正确文件，多次尝试可能有价值。对每天自动发出的报表，“五次里面总有一次成功”就不是合适的服务承诺；用户关心的是今天收到的这一份是否可靠。
 
@@ -199,7 +196,7 @@ _图 2：原创示意。两种规则检查同一组尝试；单组示意不用�
 | 8．持续维护与贡献 | 规定案例负责人、评分变更评审、失败样本进入测试集的流程 |
 
 ![评估建设分为任务契约、可重跑实验、长期维护三个阶段，每阶段交付的产物连接到下一阶段](/assets/img/posts/anthropic-agent-evals/eval-roadmap.png)
-_图 3：本文把报表案例的实施工作组织成三阶段闭环；阶段划分与交付物为原创设计。[可编辑源文件](/assets/diagrams/anthropic-agent-evals/eval-roadmap.excalidraw)。_
+_图 3：本文把报表案例的实施工作组织成三阶段闭环；阶段划分与交付物为原创设计。_
 
 ### 实施时，优先消除这些假信号
 
@@ -245,7 +242,7 @@ _图 3：本文把报表案例的实施工作组织成三阶段闭环；阶段�
 | 图形界面操作 | 在网页后台下载报表 | 实际下载文件、筛选状态、会话权限、后台数据变化 |
 
 ![编码看测试，对话看用户与系统的双向行动，研究核对结论与证据，界面操作检查真实产物](/assets/img/posts/anthropic-agent-evals/agent-methods.png)
-_图 4：四个自拟任务采用不同的证据结构，不把所有任务都简化为“最后回答是否相似”。[可编辑源文件](/assets/diagrams/anthropic-agent-evals/agent-methods.excalidraw)。_
+_图 4：四个自拟任务采用不同的证据结构，不把所有任务都简化为“最后回答是否相似”。_
 
 ### 编码 Agent：修好新问题，也保住旧行为
 
@@ -288,7 +285,7 @@ _图 4：四个自拟任务采用不同的证据结构，不把所有任务都�
 上线后的失败率、用户纠错、人工抽查和有条件的对照实验，分别提供不同证据。尤其要追踪“离线通过，但用户仍判定失败”的案例：它可能暴露了任务定义之外的需求，而不只是某条提示词不够好。
 
 ![离线评估、线上监测和人工审核发现不同问题，并把用户失败送回任务集修订](/assets/img/posts/anthropic-agent-evals/feedback-layers.png)
-_图 5：原创报表服务反馈闭环。通过离线检查后，仍要核对真实用户是否取得正确文件。[可编辑源文件](/assets/diagrams/anthropic-agent-evals/feedback-layers.excalidraw)。_
+_图 5：原创报表服务反馈闭环。通过离线检查后，仍要核对真实用户是否取得正确文件。_
 
 对于这个服务，我会把观测方法分工如下，避免给一个指标过多含义：
 

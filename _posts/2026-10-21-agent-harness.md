@@ -349,15 +349,6 @@ _权限与隔离图：动作授权和资源限制需要分别设计。图示为�
 
 本文对上述论文的职责分类和部分观察作了中文概括，工具返回结构及导出案例中的设计取舍为本文新增示例。论文作者为 Paul Barbaste、Tristan Darrigol、Germain Vu、Tom Wiltberger，原作采用 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) 许可。
 
-### 配图与可编辑源文件
+### 配图说明
 
-全文共九张配图：一张 AI 生成的原创概念封面，以及八张本文绘制的手绘风格关系图与流程图，均不是产品内部架构截图。可下载源文件，在 [Excalidraw](https://excalidraw.com/) 中打开修改：
-
-- [Harness 七个子系统（Excalidraw）](/assets/img/posts/agent-harness/subsystems.excalidraw)
-- [工具执行循环（Excalidraw）](/assets/img/posts/agent-harness/tool-loop.excalidraw)
-- [文件修改冲突（Excalidraw）](/assets/img/posts/agent-harness/edit-conflict.excalidraw)
-- [跨会话交接（Excalidraw）](/assets/img/posts/agent-harness/session-handoff.excalidraw)
-- [验证闭环（Excalidraw）](/assets/img/posts/agent-harness/verification.excalidraw)
-- [Skill、MCP、ACP 接入关系（Excalidraw）](/assets/img/posts/agent-harness/skill-mcp-acp.excalidraw)
-- [模型适配（Excalidraw）](/assets/img/posts/agent-harness/model-adapter.excalidraw)
-- [权限与沙箱（Excalidraw）](/assets/img/posts/agent-harness/permissions-sandbox.excalidraw)
+全文共九张配图：一张 AI 生成的原创概念封面，以及八张本文绘制的手绘风格关系图与流程图，均不是产品内部架构截图。

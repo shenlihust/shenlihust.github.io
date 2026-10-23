@@ -236,9 +236,7 @@ _源码阅读路线：路径对应本文固定提交；连线表达推荐阅读�
 - [官方 App Server 文档][app-server-docs]、[安全文档][security-docs]、[开源范围][oss]：当前公开接口与产品边界。
 - [openai/codex 固定提交](https://github.com/openai/codex/tree/d138398cef7d49e46fe33f1d0ddbd2ca0ed16aa4)：上文源码入口均来自该快照；仓库采用 Apache-2.0 许可证。
 
-封面为 AI 生成的原创概念插画；正文八张图为本文依据公开资料绘制的手绘风格示意图，不是官方架构原图或闭源客户端内部截图。可下载后在 [Excalidraw](https://excalidraw.com/) 中编辑：
-
-[部署形态](/assets/img/posts/codex-architecture/surfaces.excalidraw) · [会话结构](/assets/img/posts/codex-architecture/thread-model.excalidraw) · [协议时序](/assets/img/posts/codex-architecture/turn-sequence.excalidraw) · [核心循环](/assets/img/posts/codex-architecture/runtime-loop.excalidraw) · [状态边界](/assets/img/posts/codex-architecture/persistence.excalidraw) · [执行边界](/assets/img/posts/codex-architecture/security.excalidraw) · [接入关系](/assets/img/posts/codex-architecture/integrations.excalidraw) · [源码路线](/assets/img/posts/codex-architecture/reading-map.excalidraw)
+封面为 AI 生成的原创概念插画；正文八张图为本文依据公开资料绘制的手绘风格示意图，不是官方架构原图或闭源客户端内部截图。
 
 [cli]: https://github.com/openai/codex/blob/d138398cef7d49e46fe33f1d0ddbd2ca0ed16aa4/codex-rs/cli/src/main.rs
 [inproc]: https://github.com/openai/codex/blob/d138398cef7d49e46fe33f1d0ddbd2ca0ed16aa4/codex-rs/app-server-client/README.md
