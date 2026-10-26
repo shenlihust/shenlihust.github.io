@@ -4,9 +4,21 @@
 - 方式：imagegen 技能，内置 `image_gen` 工具；未使用 CLI 或 API Key。
 - 类型：stylized-concept，全新生成的概念插画，不是硬件结构图。
 - 用途：文章 front matter 的 `image.path`，用于顶部横幅与文章卡片。
-- 当前项目文件：`assets/img/posts/llm-inference-frameworks/hero-with-title.png`；无字首版保留为 `hero.png`。
+- 当前项目文件：`assets/img/posts/llm-inference-frameworks/hero-v2.png`；原文案版 `hero-with-title.png` 与无字首版 `hero.png` 保留。
 - 输出尺寸：1672 × 941，约 16:9；不透明背景。
-- 验收：已查看最终结果，主标题“一次 LLM 请求背后”、副标题“AI 应用工程师需要懂的推理框架”准确，装置主体及支脚完整，四周有留白，没有品牌标识；用输入与输出的颜色区分阅读方向。
+- 验收：已查看最终结果，主标题“一次 LLM 请求背后”、副标题“理解大模型推理框架”准确，装置主体及支脚完整，四周有留白，没有品牌标识；用输入与输出的颜色区分阅读方向。
+
+## 当前版本文案调整提示词
+
+方式：内置 image_gen；仅替换副标题，文章 URL 保持不变。
+
+```text
+Use case: text-localization
+Asset type: existing Chinese engineering blog cover.
+Edit only the subtitle text in the provided image. Replace the entire subtitle "AI 应用工程师需要懂的推理框架" with the exact Simplified Chinese text "理解大模型推理框架".
+Keep the main headline "一次 LLM 请求背后" exactly unchanged. Keep the subtitle's left alignment, position, dark navy ink color and bold sans-serif typography; the shorter subtitle should naturally occupy less horizontal space, without stretching. Remove the old subtitle completely and restore the clean off-white paper behind its unused area.
+Preserve every other aspect: canvas dimensions, the machine illustration, all components, orange input tiles, lavender cache blocks, mint output tiles, linework, colors, background, spacing and margins. Do not move or crop the machine, do not add any text or graphics. Exact final text lines: "一次 LLM 请求背后" and "理解大模型推理框架".
+```
 
 ## 首版插画提示词
 

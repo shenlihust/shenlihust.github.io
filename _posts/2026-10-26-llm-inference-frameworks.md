@@ -1,13 +1,13 @@
 ---
-title: "一次 LLM 请求背后：AI 应用工程师需要懂的推理框架"
+title: "一次 LLM 请求背后：理解大模型推理框架"
 description: "跟随一次 Agent 模型调用，理解 Prefill、Decode、KV Cache、连续批处理与推理服务架构，并把原理转化为延迟、成本和可靠性的工程判断。"
 date: 2026-10-26 10:00:00 +0800
 categories: [原理与架构]
 tags: [LLM, 推理框架, vLLM, SGLang, Agent, 性能优化]
 toc: true
 image:
-  path: /assets/img/posts/llm-inference-frameworks/hero-with-title.png
-  alt: "一次 LLM 请求背后：AI 应用工程师需要懂的推理框架。输入块经过推理装置的调度、计算与缓存模块，逐步形成输出流。"
+  path: /assets/img/posts/llm-inference-frameworks/hero-v2.png
+  alt: "一次 LLM 请求背后：理解大模型推理框架。输入块经过推理装置的调度、计算与缓存模块，逐步形成输出流。"
 ---
 
 写 AI 应用时，我们很容易把模型调用看成一个 HTTP 请求：组装 `messages`，发出去，等待流式返回，再把结果交给用户或工具。
