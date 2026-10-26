@@ -1,0 +1,22 @@
+{"type":"excalidraw","version":2,"source":"https://excalidraw.com","appState":{"viewBackgroundColor":"#ffffff","gridSize":20},"files":{},"elements":[
+{"id":"batch-title","type":"text","x":40,"y":24,"width":960,"height":48,"text":"连续批处理：完成一个，就腾出一个位置","fontSize":32,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#1e40af","roughness":0,"opacity":100,"seed":100001},
+{"id":"batch-sub","type":"text","x":40,"y":88,"width":960,"height":32,"text":"比较两条执行槽位 · 时间从左向右 · 相同字母代表同一请求","fontSize":23,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#64748b","roughness":0,"opacity":100,"seed":100002},
+{"id":"ticks","type":"text","x":244,"y":148,"width":720,"height":32,"text":"迭代 1         2         3         4         5","fontSize":22,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#64748b","roughness":0,"opacity":100,"seed":100003},
+{"id":"fixed-label","type":"text","x":40,"y":216,"width":180,"height":72,"text":"固定批次\n等待整批结束","fontSize":23,"fontFamily":3,"lineHeight":1.5,"strokeColor":"#1e40af","roughness":0,"opacity":100,"seed":100004},
+{"id":"fixed-a","type":"rectangle","x":240,"y":204,"width":700,"height":56,"strokeColor":"#1e3a5f","backgroundColor":"#93c5fd","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":100005},
+{"id":"fixed-a-text","type":"text","x":264,"y":220,"width":650,"height":30,"text":"A ────────────────── 持续生成 ────────────────","fontSize":22,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":100006},
+{"id":"fixed-b","type":"rectangle","x":240,"y":280,"width":272,"height":56,"strokeColor":"#6d28d9","backgroundColor":"#ddd6fe","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":100007},
+{"id":"fixed-b-text","type":"text","x":264,"y":296,"width":230,"height":30,"text":"B 生成 → 完成","fontSize":22,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":100008},
+{"id":"fixed-idle","type":"rectangle","x":528,"y":280,"width":412,"height":56,"strokeColor":"#1e40af","backgroundColor":"#dbeafe","fillStyle":"solid","strokeStyle":"dashed","strokeWidth":2,"roughness":0,"opacity":100,"seed":100009},
+{"id":"fixed-idle-text","type":"text","x":552,"y":296,"width":370,"height":30,"text":"槽位空闲；C 继续等待","fontSize":22,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#64748b","roughness":0,"opacity":100,"seed":100010}
+,{"id":"continuous-label","type":"text","x":40,"y":432,"width":180,"height":72,"text":"连续批处理\n迭代边界补入","fontSize":23,"fontFamily":3,"lineHeight":1.5,"strokeColor":"#1e40af","roughness":0,"opacity":100,"seed":200001},
+{"id":"continuous-a","type":"rectangle","x":240,"y":420,"width":700,"height":56,"strokeColor":"#1e3a5f","backgroundColor":"#93c5fd","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":200002},
+{"id":"continuous-a-text","type":"text","x":264,"y":436,"width":650,"height":30,"text":"A ────────────────── 持续生成 ────────────────","fontSize":22,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":200003},
+{"id":"continuous-b","type":"rectangle","x":240,"y":496,"width":272,"height":56,"strokeColor":"#6d28d9","backgroundColor":"#ddd6fe","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":200004},
+{"id":"continuous-b-text","type":"text","x":264,"y":512,"width":230,"height":30,"text":"B 生成 → 完成","fontSize":22,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":200005},
+{"id":"continuous-c","type":"rectangle","x":528,"y":496,"width":412,"height":56,"strokeColor":"#047857","backgroundColor":"#a7f3d0","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":200006},
+{"id":"continuous-c-text","type":"text","x":552,"y":512,"width":370,"height":30,"text":"C 加入 → 继续利用槽位","fontSize":22,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":200007},
+{"id":"join-mark","type":"line","x":520,"y":400,"width":0,"height":180,"points":[[0,0],[0,180]],"strokeColor":"#047857","strokeWidth":2,"strokeStyle":"dashed","roughness":0,"opacity":100,"seed":200008},
+{"id":"join-note","type":"text","x":520,"y":592,"width":420,"height":32,"text":"B 完成后，无须等待 A 完成","fontSize":23,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#047857","roughness":0,"opacity":100,"seed":200009},
+{"id":"batch-footer","type":"text","x":40,"y":672,"width":940,"height":64,"text":"只展示槽位复用 · 省略 C 的 Prefill 与显存准入\n不同迭代耗时可不同；图中长度不能用于计算加速比。","fontSize":22,"fontFamily":3,"lineHeight":1.4,"strokeColor":"#64748b","roughness":0,"opacity":100,"seed":200010}
+]}

@@ -1,0 +1,28 @@
+{"type":"excalidraw","version":2,"source":"https://excalidraw.com","appState":{"viewBackgroundColor":"#ffffff","gridSize":20},"files":{},"elements":[
+{"id":"prefix-title","type":"text","x":40,"y":24,"width":960,"height":48,"text":"前缀复用，看的是从开头开始的匹配","fontSize":32,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#1e40af","roughness":0,"opacity":100,"seed":100001},
+{"id":"prefix-sub","type":"text","x":40,"y":88,"width":960,"height":32,"text":"蓝色：潜在可复用部分    橙色：需要新计算的内容","fontSize":23,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#64748b","roughness":0,"opacity":100,"seed":100002},
+{"id":"stable-label","type":"text","x":40,"y":152,"width":900,"height":36,"text":"稳定开头：系统指令与工具定义保持一致","fontSize":25,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#1e40af","roughness":0,"opacity":100,"seed":100003},
+{"id":"r1-label","type":"text","x":40,"y":232,"width":100,"height":32,"text":"请求 1","fontSize":23,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#64748b","roughness":0,"opacity":100,"seed":100004},
+{"id":"r2-label","type":"text","x":40,"y":336,"width":100,"height":32,"text":"请求 2","fontSize":23,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#64748b","roughness":0,"opacity":100,"seed":100005},
+{"id":"r1-prefix","type":"rectangle","x":164,"y":208,"width":480,"height":72,"strokeColor":"#1e3a5f","backgroundColor":"#93c5fd","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":100006},
+{"id":"r2-prefix","type":"rectangle","x":164,"y":312,"width":480,"height":72,"strokeColor":"#1e3a5f","backgroundColor":"#93c5fd","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":100007},
+{"id":"r1-prefix-text","type":"text","x":184,"y":232,"width":440,"height":32,"text":"系统指令 / tools / 已有历史","fontSize":23,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":100008},
+{"id":"r2-prefix-text","type":"text","x":184,"y":336,"width":440,"height":32,"text":"系统指令 / tools / 已有历史","fontSize":23,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":100009},
+{"id":"r1-new","type":"rectangle","x":664,"y":208,"width":296,"height":72,"strokeColor":"#c2410c","backgroundColor":"#fed7aa","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":100010},
+{"id":"r2-new","type":"rectangle","x":664,"y":312,"width":296,"height":72,"strokeColor":"#c2410c","backgroundColor":"#fed7aa","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":100011},
+{"id":"r1-new-text","type":"text","x":684,"y":232,"width":256,"height":32,"text":"当前问题：查询日志","fontSize":22,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":100012},
+{"id":"r2-new-text","type":"text","x":684,"y":336,"width":256,"height":32,"text":"当前问题：查询指标","fontSize":22,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":100013},
+{"id":"reuse-arrow","type":"arrow","x":404,"y":284,"width":0,"height":24,"points":[[0,0],[0,24]],"endArrowhead":"arrow","strokeColor":"#1e3a5f","strokeWidth":2,"roughness":0,"opacity":100,"seed":100014}
+,{"id":"dynamic-label","type":"text","x":40,"y":444,"width":920,"height":36,"text":"开头先变化：相同的后续文字，不再构成相同前缀","fontSize":25,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#b91c1c","roughness":0,"opacity":100,"seed":200001},
+{"id":"d1-label","type":"text","x":40,"y":540,"width":100,"height":32,"text":"请求 1","fontSize":23,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#64748b","roughness":0,"opacity":100,"seed":200002},
+{"id":"d2-label","type":"text","x":40,"y":636,"width":100,"height":32,"text":"请求 2","fontSize":23,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#64748b","roughness":0,"opacity":100,"seed":200003},
+{"id":"time1","type":"rectangle","x":164,"y":520,"width":180,"height":64,"strokeColor":"#b91c1c","backgroundColor":"#fecaca","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":200004},
+{"id":"time2","type":"rectangle","x":164,"y":616,"width":180,"height":64,"strokeColor":"#b91c1c","backgroundColor":"#fecaca","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":200005},
+{"id":"time1-text","type":"text","x":180,"y":540,"width":150,"height":30,"text":"时间 10:00","fontSize":21,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":200006},
+{"id":"time2-text","type":"text","x":180,"y":636,"width":150,"height":30,"text":"时间 10:01","fontSize":21,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":200007},
+{"id":"dynamic-rest1","type":"rectangle","x":364,"y":520,"width":596,"height":64,"strokeColor":"#c2410c","backgroundColor":"#fed7aa","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":200008},
+{"id":"dynamic-rest2","type":"rectangle","x":364,"y":616,"width":596,"height":64,"strokeColor":"#c2410c","backgroundColor":"#fed7aa","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":200009},
+{"id":"rest1-text","type":"text","x":384,"y":540,"width":550,"height":30,"text":"系统指令 / tools / 历史 / 当前问题","fontSize":23,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":200010},
+{"id":"rest2-text","type":"text","x":384,"y":636,"width":550,"height":30,"text":"系统指令 / tools / 历史 / 当前问题","fontSize":23,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":200011},
+{"id":"prefix-footer","type":"text","x":40,"y":736,"width":940,"height":64,"text":"示意省略共同模板标记 · 实际按服务匹配规则命中\n命中还取决于缓存存续、块边界、配置与路由；优先保持语义正确。","fontSize":21,"fontFamily":3,"lineHeight":1.4,"strokeColor":"#64748b","roughness":0,"opacity":100,"seed":200012}
+]}

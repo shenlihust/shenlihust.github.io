@@ -1,0 +1,22 @@
+{"type":"excalidraw","version":2,"source":"https://excalidraw.com","appState":{"viewBackgroundColor":"#ffffff","gridSize":20},"files":{},"elements":[
+{"id":"pd-title","type":"text","x":40,"y":24,"width":960,"height":48,"text":"PD 分离：两类计算分开，KV 状态仍要接力","fontSize":32,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#1e40af","roughness":0,"opacity":100,"seed":100001},
+{"id":"pd-sub","type":"text","x":40,"y":88,"width":960,"height":32,"text":"按阶段拆资源池，不是把模型前半层与后半层拆开。","fontSize":24,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#64748b","roughness":0,"opacity":100,"seed":100002},
+{"id":"colocated-label","type":"text","x":40,"y":152,"width":420,"height":36,"text":"同一实例：共享资源","fontSize":26,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#1e40af","roughness":0,"opacity":100,"seed":100003},
+{"id":"same-instance","type":"rectangle","x":40,"y":212,"width":400,"height":340,"strokeColor":"#1e3a5f","backgroundColor":"transparent","strokeWidth":2,"strokeStyle":"dashed","roughness":0,"opacity":100,"seed":100004},
+{"id":"same-p","type":"rectangle","x":72,"y":244,"width":336,"height":76,"strokeColor":"#c2410c","backgroundColor":"#fed7aa","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":100005},
+{"id":"same-p-text","type":"text","x":128,"y":268,"width":260,"height":32,"text":"Prefill：处理输入","fontSize":24,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":100006},
+{"id":"same-link","type":"arrow","x":240,"y":332,"width":0,"height":44,"points":[[0,0],[0,44]],"endArrowhead":"arrow","strokeColor":"#1e3a5f","strokeWidth":2,"roughness":0,"opacity":100,"seed":100007},
+{"id":"same-d","type":"rectangle","x":72,"y":388,"width":336,"height":76,"strokeColor":"#047857","backgroundColor":"#a7f3d0","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":100008},
+{"id":"same-d-text","type":"text","x":128,"y":412,"width":260,"height":32,"text":"Decode：继续生成","fontSize":24,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":100009},
+{"id":"same-note","type":"text","x":72,"y":496,"width":340,"height":32,"text":"同一组 GPU / 权重 / KV 空间","fontSize":21,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#64748b","roughness":0,"opacity":100,"seed":100010}
+,{"id":"separated-label","type":"text","x":560,"y":152,"width":420,"height":36,"text":"分离部署：各自扩缩容","fontSize":26,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#1e40af","roughness":0,"opacity":100,"seed":200001},
+{"id":"separated-p","type":"rectangle","x":560,"y":212,"width":400,"height":112,"strokeColor":"#c2410c","backgroundColor":"#fed7aa","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":200002},
+{"id":"separated-p-text","type":"text","x":588,"y":232,"width":350,"height":76,"text":"Prefill 资源池\n持有所需权重，建立 KV","fontSize":24,"fontFamily":3,"lineHeight":1.45,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":200003},
+{"id":"kv-transfer","type":"arrow","x":760,"y":336,"width":0,"height":80,"points":[[0,0],[0,80]],"endArrowhead":"arrow","strokeColor":"#6d28d9","strokeWidth":3,"roughness":0,"opacity":100,"seed":200004},
+{"id":"kv-transfer-label","type":"text","x":792,"y":356,"width":180,"height":64,"text":"KV 状态传输\n消耗带宽与时间","fontSize":21,"fontFamily":3,"lineHeight":1.45,"strokeColor":"#6d28d9","roughness":0,"opacity":100,"seed":200005},
+{"id":"separated-d","type":"rectangle","x":560,"y":428,"width":400,"height":124,"strokeColor":"#047857","backgroundColor":"#a7f3d0","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":200006},
+{"id":"separated-d-text","type":"text","x":588,"y":452,"width":350,"height":76,"text":"Decode 资源池\n持有所需权重，复用 KV 生成","fontSize":23,"fontFamily":3,"lineHeight":1.45,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":200007},
+{"id":"left-benefit","type":"text","x":40,"y":600,"width":420,"height":74,"text":"部署直接、无需跨池传 KV\n长 Prefill 可能干扰 Decode","fontSize":23,"fontFamily":3,"lineHeight":1.5,"strokeColor":"#64748b","roughness":0,"opacity":100,"seed":200008},
+{"id":"right-benefit","type":"text","x":560,"y":600,"width":420,"height":74,"text":"两阶段可分别配资源\n增加传输、路由与运维复杂度","fontSize":23,"fontFamily":3,"lineHeight":1.5,"strokeColor":"#64748b","roughness":0,"opacity":100,"seed":200009},
+{"id":"pd-footer","type":"text","x":40,"y":728,"width":940,"height":32,"text":"是否有收益，要结合输入输出长度、流量、网络和延迟目标验证。","fontSize":23,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#1e40af","roughness":0,"opacity":100,"seed":200010}
+]}

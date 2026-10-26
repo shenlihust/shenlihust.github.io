@@ -1,0 +1,25 @@
+{"type":"excalidraw","version":2,"source":"https://excalidraw.com","appState":{"viewBackgroundColor":"#ffffff","gridSize":20},"files":{},"elements":[
+{"id":"latency-title","type":"text","x":40,"y":24,"width":960,"height":48,"text":"首 Token、持续生成、任务完成，要分开看","fontSize":32,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#1e40af","roughness":0,"opacity":100,"seed":100001},
+{"id":"latency-sub","type":"text","x":40,"y":88,"width":960,"height":32,"text":"客户端观测口径 · 区段长度仅为示意 · 空的流事件不算有效内容","fontSize":23,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#64748b","roughness":0,"opacity":100,"seed":100002},
+{"id":"axis","type":"arrow","x":60,"y":244,"width":900,"height":0,"points":[[0,0],[900,0]],"endArrowhead":"arrow","strokeColor":"#1e3a5f","strokeWidth":2,"roughness":0,"opacity":100,"seed":100003},
+{"id":"t0","type":"ellipse","x":54,"y":238,"width":12,"height":12,"strokeColor":"#3b82f6","backgroundColor":"#3b82f6","fillStyle":"solid","strokeWidth":1,"roughness":0,"opacity":100,"seed":100004},
+{"id":"t1","type":"ellipse","x":494,"y":238,"width":12,"height":12,"strokeColor":"#3b82f6","backgroundColor":"#3b82f6","fillStyle":"solid","strokeWidth":1,"roughness":0,"opacity":100,"seed":100005},
+{"id":"tn","type":"ellipse","x":834,"y":238,"width":12,"height":12,"strokeColor":"#3b82f6","backgroundColor":"#3b82f6","fillStyle":"solid","strokeWidth":1,"roughness":0,"opacity":100,"seed":100006},
+{"id":"done","type":"ellipse","x":934,"y":238,"width":12,"height":12,"strokeColor":"#3b82f6","backgroundColor":"#3b82f6","fillStyle":"solid","strokeWidth":1,"roughness":0,"opacity":100,"seed":100007},
+{"id":"t0-label","type":"text","x":40,"y":164,"width":140,"height":64,"text":"t0\n请求发出","fontSize":22,"fontFamily":3,"lineHeight":1.35,"strokeColor":"#1e40af","roughness":0,"opacity":100,"seed":100008},
+{"id":"t1-label","type":"text","x":428,"y":164,"width":220,"height":64,"text":"t1\n首个有效生成内容","fontSize":22,"fontFamily":3,"lineHeight":1.35,"strokeColor":"#1e40af","roughness":0,"opacity":100,"seed":100009},
+{"id":"tn-label","type":"text","x":744,"y":164,"width":180,"height":64,"text":"tN\n最后内容","fontSize":22,"fontFamily":3,"lineHeight":1.35,"strokeColor":"#1e40af","roughness":0,"opacity":100,"seed":100010},
+{"id":"done-label","type":"text","x":916,"y":164,"width":110,"height":64,"text":"t_done\n响应结束","fontSize":20,"fontFamily":3,"lineHeight":1.35,"strokeColor":"#1e40af","roughness":0,"opacity":100,"seed":100011},
+{"id":"before-first","type":"rectangle","x":60,"y":292,"width":428,"height":76,"strokeColor":"#c2410c","backgroundColor":"#fed7aa","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":100012},
+{"id":"before-first-text","type":"text","x":80,"y":314,"width":390,"height":32,"text":"网络 / 排队 / 输入处理…","fontSize":23,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":100013},
+{"id":"generation","type":"rectangle","x":500,"y":292,"width":340,"height":76,"strokeColor":"#047857","backgroundColor":"#a7f3d0","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":100014},
+{"id":"generation-text","type":"text","x":520,"y":314,"width":310,"height":32,"text":"生成 / 调度 / 流式传输…","fontSize":21,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":100015}
+,{"id":"ttft-span","type":"arrow","x":60,"y":416,"width":440,"height":0,"points":[[0,0],[440,0]],"startArrowhead":"arrow","endArrowhead":"arrow","strokeColor":"#c2410c","strokeWidth":2,"roughness":0,"opacity":100,"seed":200001},
+{"id":"ttft-text","type":"text","x":100,"y":440,"width":390,"height":32,"text":"TTFT = t1 − t0","fontSize":25,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#c2410c","roughness":0,"opacity":100,"seed":200002},
+{"id":"decode-span","type":"arrow","x":512,"y":416,"width":328,"height":0,"points":[[0,0],[328,0]],"startArrowhead":"arrow","endArrowhead":"arrow","strokeColor":"#047857","strokeWidth":2,"roughness":0,"opacity":100,"seed":200003},
+{"id":"tpot-text","type":"text","x":520,"y":440,"width":450,"height":32,"text":"TPOT ≈ (tN − t1)/(N − 1)","fontSize":22,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#047857","roughness":0,"opacity":100,"seed":200004},
+{"id":"e2e-span","type":"arrow","x":60,"y":520,"width":880,"height":0,"points":[[0,0],[880,0]],"startArrowhead":"arrow","endArrowhead":"arrow","strokeColor":"#1e3a5f","strokeWidth":2,"roughness":0,"opacity":100,"seed":200005},
+{"id":"e2e-text","type":"text","x":292,"y":544,"width":600,"height":32,"text":"E2E = t_done − t0","fontSize":25,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#1e40af","roughness":0,"opacity":100,"seed":200006},
+{"id":"visible-note","type":"text","x":40,"y":628,"width":960,"height":68,"text":"底层已有 Token → 可能还在输出思考或工具参数 → 用户才看到正文\n因此，首个可见正文时间也值得单独记录。","fontSize":23,"fontFamily":3,"lineHeight":1.45,"strokeColor":"#6d28d9","roughness":0,"opacity":100,"seed":200007},
+{"id":"latency-footer","type":"text","x":40,"y":744,"width":960,"height":64,"text":"N > 1 且计数与时间范围一致时才使用 TPOT 公式\n一个流事件可含多个 Token：事件到达间隔不等于逐 Token 的 ITL。","fontSize":22,"fontFamily":3,"lineHeight":1.4,"strokeColor":"#64748b","roughness":0,"opacity":100,"seed":200008}
+]}

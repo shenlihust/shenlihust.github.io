@@ -1,0 +1,26 @@
+{"type":"excalidraw","version":2,"source":"https://excalidraw.com","appState":{"viewBackgroundColor":"#ffffff","gridSize":20},"files":{},"elements":[
+{"id":"journey-title","type":"text","x":40,"y":24,"width":960,"height":48,"text":"一次请求，跨过几种不同的职责","fontSize":34,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#1e40af","roughness":0,"opacity":100,"seed":100001},
+{"id":"journey-subtitle","type":"text","x":40,"y":88,"width":960,"height":32,"text":"故障排查 Agent：支付接口最近十分钟为什么变慢？","fontSize":24,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#64748b","roughness":0,"opacity":100,"seed":100002},
+{"id":"app-api","type":"arrow","x":292,"y":222,"width":56,"height":0,"points":[[0,0],[56,0]],"endArrowhead":"arrow","strokeColor":"#c2410c","strokeWidth":2,"roughness":0,"opacity":100,"seed":100003},
+{"id":"api-template","type":"arrow","x":612,"y":222,"width":56,"height":0,"points":[[0,0],[56,0]],"endArrowhead":"arrow","strokeColor":"#1e3a5f","strokeWidth":2,"roughness":0,"opacity":100,"seed":100004},
+{"id":"app","type":"rectangle","x":40,"y":160,"width":240,"height":124,"strokeColor":"#c2410c","backgroundColor":"#fed7aa","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":100005},
+{"id":"app-text","type":"text","x":60,"y":180,"width":200,"height":80,"text":"应用 / Harness\n组织 messages\n和工具定义","fontSize":23,"fontFamily":3,"lineHeight":1.2,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":100006},
+{"id":"api","type":"rectangle","x":360,"y":160,"width":240,"height":124,"strokeColor":"#1e3a5f","backgroundColor":"#93c5fd","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":100007},
+{"id":"api-text","type":"text","x":380,"y":180,"width":200,"height":80,"text":"网关 / 接入\n鉴权、限流\n与请求路由","fontSize":23,"fontFamily":3,"lineHeight":1.2,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":100008},
+{"id":"template","type":"rectangle","x":680,"y":160,"width":280,"height":124,"strokeColor":"#1e3a5f","backgroundColor":"#93c5fd","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":100009},
+{"id":"template-text","type":"text","x":700,"y":180,"width":240,"height":80,"text":"模板 + Tokenizer\n角色与文本\n变成 Token ID","fontSize":23,"fontFamily":3,"lineHeight":1.2,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":100010}
+,{"id":"template-schedule","type":"arrow","x":820,"y":296,"width":0,"height":72,"points":[[0,0],[0,72]],"endArrowhead":"arrow","strokeColor":"#1e3a5f","strokeWidth":2,"roughness":0,"opacity":100,"seed":200001},
+{"id":"schedule-execute","type":"arrow","x":668,"y":442,"width":56,"height":0,"points":[[0,0],[-56,0]],"endArrowhead":"arrow","strokeColor":"#1e3a5f","strokeWidth":2,"roughness":0,"opacity":100,"seed":200002},
+{"id":"execute-output","type":"arrow","x":348,"y":442,"width":56,"height":0,"points":[[0,0],[-56,0]],"endArrowhead":"arrow","strokeColor":"#6d28d9","strokeWidth":2,"roughness":0,"opacity":100,"seed":200003},
+{"id":"schedule","type":"rectangle","x":680,"y":380,"width":280,"height":124,"strokeColor":"#1e3a5f","backgroundColor":"#93c5fd","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":200004},
+{"id":"schedule-text","type":"text","x":700,"y":400,"width":240,"height":80,"text":"调度器\n等待、批处理\n与显存准入","fontSize":23,"fontFamily":3,"lineHeight":1.2,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":200005},
+{"id":"execute","type":"rectangle","x":360,"y":380,"width":240,"height":124,"strokeColor":"#6d28d9","backgroundColor":"#ddd6fe","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":200006},
+{"id":"execute-text","type":"text","x":380,"y":400,"width":200,"height":80,"text":"模型执行\nPrefill / Decode\nGPU 上运行算子","fontSize":22,"fontFamily":3,"lineHeight":1.2,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":200007},
+{"id":"output","type":"rectangle","x":40,"y":380,"width":240,"height":124,"strokeColor":"#047857","backgroundColor":"#a7f3d0","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":200008},
+{"id":"output-text","type":"text","x":60,"y":400,"width":200,"height":80,"text":"输出处理\n采样、反分词\n解析并流式返回","fontSize":22,"fontFamily":3,"lineHeight":1.2,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":200009},
+{"id":"cache-link","type":"arrow","x":480,"y":516,"width":0,"height":44,"points":[[0,0],[0,44]],"startArrowhead":"arrow","endArrowhead":"arrow","strokeColor":"#6d28d9","strokeWidth":2,"roughness":0,"opacity":100,"seed":200010},
+{"id":"cache","type":"ellipse","x":340,"y":572,"width":280,"height":88,"strokeColor":"#6d28d9","backgroundColor":"#ddd6fe","fillStyle":"solid","strokeWidth":2,"roughness":0,"opacity":100,"seed":200011},
+{"id":"cache-text","type":"text","x":396,"y":600,"width":200,"height":32,"text":"读写 KV Cache","fontSize":24,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#374151","roughness":0,"opacity":100,"seed":200012},
+{"id":"return-note","type":"text","x":40,"y":580,"width":260,"height":70,"text":"应用接收正文\n或继续调用工具","fontSize":23,"fontFamily":3,"lineHeight":1.4,"strokeColor":"#047857","roughness":0,"opacity":100,"seed":200013},
+{"id":"journey-footer","type":"text","x":40,"y":704,"width":940,"height":32,"text":"逻辑职责示意 · 部署可合并或拆分 · 慢在哪一段，需要分别取证","fontSize":22,"fontFamily":3,"lineHeight":1.25,"strokeColor":"#64748b","roughness":0,"opacity":100,"seed":200014}
+]}
