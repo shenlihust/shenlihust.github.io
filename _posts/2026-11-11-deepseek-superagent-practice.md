@@ -102,9 +102,9 @@ GitHub 和飞书采用了不同的接入方式。
 
 **官方这两条规则默认是开启的。** 测试面板中后来显示关闭，是本次配置调整的结果，不是官方默认状态。
 
-![只读查询第一次被忽略、规则和 Eval 模式调整后被接受的对照](/assets/img/posts/deepseek-superagent/routing-reviewed.png)
+![只读查询第一次被忽略、规则和 Eval 模式调整后被接受的对照](/assets/img/posts/deepseek-superagent/routing-imagegen.png)
 
-*图 2：同类请求在接单规则与运行模式调整前后的不同去向；图内请求为节选。*
+*图 2：同类请求在接单规则与运行模式调整前后的不同去向（imagegen，非产品截图）；图内请求为节选。*
 
 ### 规则由谁匹配？
 
@@ -137,9 +137,9 @@ GitHub 和飞书采用了不同的接入方式。
 
 它包含三个层次：要产出什么、允许进行哪些仓库操作，以及什么时候才能开始修改。
 
-![从计划、独立确认到原 Worker 创建 PR，再到人工合并通知的实际任务时间线](/assets/img/posts/deepseek-superagent/lifecycle-reviewed.png)
+![从计划、独立确认到原 Worker 创建 PR，再到人工合并通知的实际任务时间线](/assets/img/posts/deepseek-superagent/lifecycle-imagegen.png)
 
-*图 3：实测任务时间线与确认关联依据。原 Worker 接收确认后继续执行；合并通知由代码生成。*
+*图 3：实测任务时间线与确认关联依据（imagegen，非产品截图）。原 Worker 接收确认后继续执行；合并通知由代码生成。*
 
 ### 从消息到 Worker
 
@@ -183,9 +183,9 @@ Router 此前已经收到 Worker 的等待人工回答通知，知道哪个任�
 
 ## 6. 内部汇报与外部交付，是两件事
 
-![Worker 内部报告、Router 请求回复、Outbox 发送和飞书实际收到消息的分离链路](/assets/img/posts/deepseek-superagent/delivery-reviewed.png)
+![Worker 内部报告、Router 请求回复、Outbox 发送和飞书实际收到消息的分离链路](/assets/img/posts/deepseek-superagent/delivery-imagegen.png)
 
-*图 4：第一次只读任务的交付断点。内部报告不等于已经发送，交付要验证发送回执与来源会话。*
+*图 4：第一次只读任务的交付断点（imagegen，非产品截图）。内部报告不等于已经发送，交付要验证发送回执与来源会话；报告和消息卡片为示意。*
 
 前面的只读测试还遇到过一个问题：Worker 已经完成查询，飞书却迟迟没有结果。
 
@@ -219,9 +219,9 @@ Router 此前已经收到 Worker 的等待人工回答通知，知道哪个任�
 
 Router 会持续接收各种消息，自然会遇到上下文越来越长的问题。更新后的 DSH 源码提供了**可选的压缩能力**：加载相应插件后，达到上下文压力阈值时，可先调用工具结果裁剪服务，再重新测量；仍需压缩时，由模型把较早历史整理成结构化摘要，并按保留策略留下最近的一段原文。不能仅凭使用了 DSH 就断言任意部署都开启了这套机制。
 
-![DSH 上下文压缩与独立任务状态查询的双通道机制](/assets/img/posts/deepseek-superagent/context-reviewed.png)
+![DSH 上下文压缩与独立任务状态查询的双通道机制](/assets/img/posts/deepseek-superagent/context-imagegen.png)
 
-*图 5：上下文摘要和持久化任务记录是两条信息通道。上半部以启用压缩插件为前提；此图说明源码机制，不代表本次已触发压缩。*
+*图 5：上下文摘要和持久化任务记录是两条信息通道（imagegen，非产品截图）。上半部以启用压缩插件为前提；此图说明源码机制，不代表本次已触发压缩。*
 
 摘要模板要求保留用户意图、关键文件、错误与修复、未完成任务、当前工作、下一步、约束与开放问题。旧摘要会与新信息合并，原始事件仍保留在日志中，但后续模型请求使用替换后的上下文视图。
 
