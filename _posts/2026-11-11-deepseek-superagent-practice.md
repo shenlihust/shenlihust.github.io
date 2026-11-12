@@ -35,7 +35,7 @@ Router 是一个长期存在的 DSH Session。它会收到新候选消息、Work
 
 ### Worker：围绕一个任务执行
 
-接受一个新任务后，宿主为它安排 Worker Session 和工作目录。Worker 获取原始请求、授权范围及后续输入，使用文件、终端、GitHub CLI 等工具完成工作。本次确认接续复用了原 Worker；这不意味着一个 Ticket 在所有恢复或重新调度场景中都永远只有一次执行记录。
+接受一个新任务后，宿主为它安排 Worker Session 和工作目录。Worker 获取原始请求、授权范围及后续输入，使用文件、终端、GitHub CLI 等工具完成工作。当前实现按 Ticket ID 确定主 Worker Session：`worker-<ticketId>`。同一任务可以有多次执行记录，而不必每次都换一个会话。
 
 这里的 Router 和 Worker 是**会话角色，不是每个角色各启动一个操作系统进程**。桌面端的 Host 加载插件、管理会话与后台循环；工具执行可以再创建子进程。不能从侧边栏里的三个会话，推断机器上有三个独立 Agent 服务。
 
@@ -48,9 +48,28 @@ Router 是一个长期存在的 DSH Session。它会收到新候选消息、Work
 | Trigger | 标准化后的消息、发送者、来源和时间 | 同一消息可以去重、追踪去向 |
 | Thread | 话题、订阅它的任务及关联信息 | 后续回复可以送到已有任务 |
 | Ticket | 任务范围、状态、执行记录、输入和报告 | 重启或上下文压缩后仍能找回工作状态 |
+| Assignment | 一次执行安排的状态、报告和结束记录 | 区分首次执行、恢复或重试，识别已经过期的执行操作 |
 | Outbox | 对外发送的消息及发送状态 | 区分“准备回复”和“已经发送” |
 
 这些数据保存在插件的 SQLite 数据库中。例如，`ticket` 表的 JSON 值包含任务输入和执行记录，Worker 的报告保存在 `assignments[].report`，待回答问题可记录在 `attention.question`。模型通过 `orchestrator_read` 读取精简卡片，必要时再读取详情；不需要每次把全部任务历史塞进提示词。
+
+### 消息、讨论、任务和执行，不是一一对应
+
+**Trigger 是发生的一次事件，Thread 是外部讨论线索，Ticket 是接下的一件工作，Assignment 是这件工作的一次执行安排，Worker Session 则承载模型的执行上下文。**
+
+![Trigger、Thread、Ticket、Assignment 与 Worker Session 的关系：消息归入讨论线索，讨论线索与任务多对多关联；Ticket 与主 Worker Session 一对一，与 Assignment 一对多。](/assets/img/posts/deepseek-superagent/concepts-imagegen.png)
+
+*图 1a：概念关系与执行生命周期（imagegen，非产品截图）。上半部分表示消息归组及讨论与任务的关联，下半部分展开同一任务的多次执行安排与主 Worker 会话。话题内补充、另一项工作 U 和结束后的再次恢复是教学示例，不是本次实测新增的事件。*
+
+**Thread 与 Ticket 是多对多关系。** 一个任务可以同时关联飞书需求话题、独立发送的确认消息和 GitHub PR 讨论；同一话题也可能有多个任务订阅。飞书消息按 `chatId + (rootId ?? messageId)` 归组：原话题内的回复可以归入同一 Thread，在群里独立发送的“确认”则可能形成新 Thread，需要 Router 判断是否关联到旧 Ticket。同一个群并不等于同一个 Thread。
+
+**Assignment 更新执行记录，Worker Session 延续上下文。** 本次“先计划、等确认、再修改”继续使用原来的执行安排，不是每条消息都新建 Assignment。若 Ticket 已结束，之后又满足恢复条件，系统会保留旧记录、创建新的 Assignment，通常继续使用同一个 Worker Session。新 Assignment ID 还用于拦截旧的排队启动或投递操作，避免它们干扰当前执行。任务结束会停止相关工作，但不会因此删除会话；如果会话被外部删除，宿主可以重建并补充任务信息，被删除的历史却不能视为仍然存在。
+
+**多任务订阅不等于自动选出唯一执行者。** 同一 Thread 的新消息可以分发给多个符合条件的 Ticket，各 Worker 按自己的范围判断：属于自己就接手，超出范围就调用 `orchestrator_trigger_handback` 退回；仅作上下文的订阅不授予执行权限。仍有 Worker 负责时，消息不会因另一个 Worker 退回就重新进入 Eval。
+
+这也有一个实际边界：`orchestrator_ack` 按 Trigger ID 去重，只保证接收确认不会重复入队，并不是“谁先确认谁独占任务”的锁。最终回复也只有确定性消息 ID 去重，没有跨任务的语义去重。两个 Worker 若都误判为自己的职责，仍可能重复工作或回复。因此，任务范围和关联判断的质量很重要。
+
+这些关系分别可以在官方源码的 [Thread 定义与跟进归属](https://github.com/deepseek-ai/dsh-superagent-prototype/blob/8c32a9dc5d72c033816c6a8110b37f40cf94fba4/src/core/model.ts)、[消息分发](https://github.com/deepseek-ai/dsh-superagent-prototype/blob/8c32a9dc5d72c033816c6a8110b37f40cf94fba4/src/core/intake.ts)、[任务恢复](https://github.com/deepseek-ai/dsh-superagent-prototype/blob/8c32a9dc5d72c033816c6a8110b37f40cf94fba4/src/core/tickets.ts)、[Worker 执行器](https://github.com/deepseek-ai/dsh-superagent-prototype/blob/8c32a9dc5d72c033816c6a8110b37f40cf94fba4/src/executor/dsh.ts)和[回复去重](https://github.com/deepseek-ai/dsh-superagent-prototype/blob/8c32a9dc5d72c033816c6a8110b37f40cf94fba4/src/core/replies.ts)中找到。
 
 ## 2. 消息接入：实时监听之外，还有补收
 
